@@ -24,16 +24,16 @@ from llm_clients import call_llm, parse_json_response
 from report_generator import write_report
 
 TRANSLATE_MODEL = {
-    "provider": "anthropic",
-    "model_id": "claude-sonnet-4-5",
+    "provider": "openrouter",
+    "model_id": "anthropic/claude-sonnet-4-5",
 }
 REVIEW_MODEL = {
-    "provider": "anthropic",
-    "model_id": "claude-opus-4-5",
+    "provider": "openrouter",
+    "model_id": "anthropic/claude-opus-4-5",
 }
 JUDGE_MODEL = {
-    "provider": "anthropic",
-    "model_id": "claude-sonnet-4-5",
+    "provider": "openrouter",
+    "model_id": "anthropic/claude-sonnet-4-5",
 }
 
 WORD_LIMIT = 6000
@@ -116,9 +116,9 @@ def write_excel_report(
         ("Дата",            date_str),
         ("Языковая пара",   f"{src_lang} → {tgt_lang}"),
         ("Слов всего",      word_count),
-        ("Модель перевода", TRANSLATE_MODEL['model_id']),
-        ("Модель ревью",    REVIEW_MODEL['model_id']),
-        ("Модель QA",       JUDGE_MODEL['model_id']),
+        ("Модель перевода", f"openrouter/{TRANSLATE_MODEL['model_id']}"),
+        ("Модель ревью",    f"openrouter/{REVIEW_MODEL['model_id']}"),
+        ("Модель QA",       f"openrouter/{JUDGE_MODEL['model_id']}"),
     ]
     for i, (k, v) in enumerate(meta, start=2):
         _cell(ws1, i, 1, k, bold=True, bg="D9E1F2")
@@ -491,7 +491,7 @@ def run_pipeline(
         source_file=file_names,
         output_file=", ".join(str(r["output_path"].name) for r in results),
         source_lang=src_lang, target_lang=tgt_lang, domain="education",
-        translation_model=TRANSLATE_MODEL['model_id'],
+        translation_model=f"openrouter/{TRANSLATE_MODEL['model_id']}",
     )
 
     xlsx_report_path = work_dir / "jerome_qa_report.xlsx"
