@@ -100,26 +100,32 @@ def _get_oauth_client_config() -> dict:
 
 @app.route("/oauth/login")
 def oauth_login():
-    code_verifier = secrets.token_urlsafe(64)
-    code_challenge = base64.urlsafe_b64encode(
-        hashlib.sha256(code_verifier.encode()).digest()
-    ).rstrip(b"=").decode()
+    import traceback
+    try:
+        code_verifier = secrets.token_urlsafe(64)
+        code_challenge = base64.urlsafe_b64encode(
+            hashlib.sha256(code_verifier.encode()).digest()
+        ).rstrip(b"=").decode()
 
-    flow = Flow.from_client_config(
-        _get_oauth_client_config(),
-        scopes=OAUTH_SCOPES,
-        redirect_uri=url_for("oauth_callback", _external=True),
-    )
-    auth_url, state = flow.authorization_url(
-        access_type="offline",
-        include_granted_scopes="true",
-        prompt="consent",
-        code_challenge=code_challenge,
-        code_challenge_method="S256",
-    )
-    session["oauth_state"] = state
-    session["code_verifier"] = code_verifier
-    return redirect(auth_url)
+        flow = Flow.from_client_config(
+            _get_oauth_client_config(),
+            scopes=OAUTH_SCOPES,
+            redirect_uri=url_for("oauth_callback", _external=True),
+        )
+        auth_url, state = flow.authorization_url(
+            access_type="offline",
+            include_granted_scopes="true",
+            prompt="consent",
+            code_challenge=code_challenge,
+            code_challenge_method="S256",
+        )
+        session["oauth_state"] = state
+        session["code_verifier"] = code_verifier
+        return redirect(auth_url)
+    except Exception as e:
+        tb = traceback.format_exc()
+        print(tb, flush=True)
+        return f"<pre style='color:red'>OAuth login error:\n{tb}</pre>", 500
 
 
 @app.route("/oauth/callback")
