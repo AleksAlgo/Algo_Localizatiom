@@ -8,6 +8,10 @@ import io
 import re
 from pathlib import Path
 
+import json
+import os
+import tempfile
+
 from google.oauth2 import service_account
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
@@ -20,6 +24,32 @@ SCOPES = [
 
 _SERVICE_ACCOUNT_FILE = Path(__file__).parent / "service_account.json"
 OAUTH_CLIENT_FILE = Path(__file__).parent / "oauth_client.json"
+
+
+def _resolve_oauth_client_file() -> str:
+    """Return path to oauth_client.json, creating it from env var if needed."""
+    if OAUTH_CLIENT_FILE.exists():
+        return str(OAUTH_CLIENT_FILE)
+    raw = os.environ.get("GOOGLE_OAUTH_CLIENT_JSON")
+    if raw:
+        tmp = Path(tempfile.mktemp(suffix=".json"))
+        tmp.write_text(raw)
+        return str(tmp)
+    raise FileNotFoundError("oauth_client.json not found and GOOGLE_OAUTH_CLIENT_JSON env var not set")
+
+
+def _sa_service():
+    if _SERVICE_ACCOUNT_FILE.exists():
+        creds = service_account.Credentials.from_service_account_file(
+            str(_SERVICE_ACCOUNT_FILE), scopes=SCOPES
+        )
+    else:
+        raw = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
+        if not raw:
+            raise FileNotFoundError("service_account.json not found and GOOGLE_SERVICE_ACCOUNT_JSON env var not set")
+        info = json.loads(raw)
+        creds = service_account.Credentials.from_service_account_info(info, scopes=SCOPES)
+    return build("drive", "v3", credentials=creds, cache_discovery=False)
 
 _MIME_EXPORT = {
     "application/vnd.google-apps.document": (
@@ -41,11 +71,6 @@ _NATIVE_EXTS = {
 }
 
 
-def _sa_service():
-    creds = service_account.Credentials.from_service_account_file(
-        str(_SERVICE_ACCOUNT_FILE), scopes=SCOPES
-    )
-    return build("drive", "v3", credentials=creds, cache_discovery=False)
 
 
 def _oauth_service(oauth_creds: Credentials):

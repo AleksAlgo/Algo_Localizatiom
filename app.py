@@ -95,7 +95,7 @@ def oauth_login():
     ).rstrip(b"=").decode()
 
     flow = Flow.from_client_secrets_file(
-        str(drive_client.OAUTH_CLIENT_FILE),
+        drive_client._resolve_oauth_client_file(),
         scopes=OAUTH_SCOPES,
         redirect_uri=url_for("oauth_callback", _external=True),
     )
@@ -118,7 +118,7 @@ def oauth_callback():
         state = session.get("oauth_state")
         code_verifier = session.get("code_verifier")
         flow = Flow.from_client_secrets_file(
-            str(drive_client.OAUTH_CLIENT_FILE),
+            drive_client._resolve_oauth_client_file(),
             scopes=OAUTH_SCOPES,
             state=state,
             redirect_uri=url_for("oauth_callback", _external=True),
