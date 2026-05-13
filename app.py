@@ -17,6 +17,8 @@ from pathlib import Path
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
+import json as _json
+
 from flask import Flask, jsonify, redirect, request, send_file, session, url_for
 from google_auth_oauthlib.flow import Flow
 from google.oauth2.credentials import Credentials
@@ -85,6 +87,15 @@ def _creds_to_dict(creds: Credentials) -> dict:
     }
 
 
+def _get_oauth_client_config() -> dict:
+    if drive_client.OAUTH_CLIENT_FILE.exists():
+        return _json.loads(drive_client.OAUTH_CLIENT_FILE.read_text())
+    raw = os.environ.get("GOOGLE_OAUTH_CLIENT_JSON")
+    if raw:
+        return _json.loads(raw)
+    raise RuntimeError("oauth_client.json not found and GOOGLE_OAUTH_CLIENT_JSON not set")
+
+
 # ── OAuth routes ──────────────────────────────────────────────────────────────
 
 @app.route("/oauth/login")
@@ -94,8 +105,8 @@ def oauth_login():
         hashlib.sha256(code_verifier.encode()).digest()
     ).rstrip(b"=").decode()
 
-    flow = Flow.from_client_secrets_file(
-        drive_client._resolve_oauth_client_file(),
+    flow = Flow.from_client_config(
+        _get_oauth_client_config(),
         scopes=OAUTH_SCOPES,
         redirect_uri=url_for("oauth_callback", _external=True),
     )
@@ -117,8 +128,8 @@ def oauth_callback():
     try:
         state = session.get("oauth_state")
         code_verifier = session.get("code_verifier")
-        flow = Flow.from_client_secrets_file(
-            drive_client._resolve_oauth_client_file(),
+        flow = Flow.from_client_config(
+            _get_oauth_client_config(),
             scopes=OAUTH_SCOPES,
             state=state,
             redirect_uri=url_for("oauth_callback", _external=True),
