@@ -351,6 +351,7 @@ def debug_env():
     return jsonify({
         "has_GOOGLE_OAUTH_CLIENT_JSON": "GOOGLE_OAUTH_CLIENT_JSON" in os.environ,
         "has_GOOGLE_SERVICE_ACCOUNT_JSON": "GOOGLE_SERVICE_ACCOUNT_JSON" in os.environ,
+        "has_ANTHROPIC_API_KEY": "ANTHROPIC_API_KEY" in os.environ,
         "has_OPENROUTER_API_KEY": "OPENROUTER_API_KEY" in os.environ,
         "has_SECRET_KEY": "SECRET_KEY" in os.environ,
     })
