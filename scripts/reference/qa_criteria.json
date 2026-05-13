@@ -1,0 +1,93 @@
+{
+  "framework": "Microsoft Quality Framework (MQM-based)",
+  "severity_weights": {
+    "Critical": 10,
+    "Major": 5,
+    "Minor": 1,
+    "Neutral": 0
+  },
+  "pass_fail_thresholds": {
+    "excellent": {"max_score": 9, "decision": "PASS", "label": "Excellent"},
+    "good": {"max_score": 19, "decision": "PASS", "label": "Good"},
+    "acceptable": {"max_score": 29, "decision": "PASS_CONDITIONAL", "label": "Acceptable"},
+    "poor": {"max_score": 49, "decision": "FAIL", "label": "Poor"},
+    "unacceptable": {"max_score": null, "decision": "FAIL", "label": "Unacceptable"},
+    "critical_override": {"condition": "any_critical_error", "decision": "FAIL"}
+  },
+  "categories": [
+    {
+      "id": "accuracy",
+      "name": "Accuracy (Точность)",
+      "error_types": [
+        {"code": "MISTRANSLATION", "name": "Mistranslation", "default_severity": "Major", "description": "Перевод не соответствует смыслу оригинала"},
+        {"code": "OMISSION", "name": "Omission", "default_severity": "Major", "description": "Пропущена часть исходного текста"},
+        {"code": "ADDITION", "name": "Addition", "default_severity": "Minor", "description": "Добавлена информация, отсутствующая в оригинале"},
+        {"code": "UNTRANSLATED", "name": "Untranslated", "default_severity": "Major", "description": "Часть текста не переведена"},
+        {"code": "OVER_TRANSLATION", "name": "Over-translation", "default_severity": "Major", "description": "Переведены элементы, которые не должны переводиться (бренды, плейсхолдеры)"},
+        {"code": "UNDER_TRANSLATION", "name": "Under-translation", "default_severity": "Minor", "description": "Слишком общий перевод, утрачены нюансы"}
+      ]
+    },
+    {
+      "id": "fluency",
+      "name": "Fluency (Беглость)",
+      "error_types": [
+        {"code": "GRAMMAR", "name": "Grammar", "default_severity": "Minor", "description": "Грамматические ошибки"},
+        {"code": "SPELLING", "name": "Spelling", "default_severity": "Minor", "description": "Орфографические ошибки и опечатки"},
+        {"code": "PUNCTUATION", "name": "Punctuation", "default_severity": "Minor", "description": "Неправильная пунктуация"},
+        {"code": "CAPITALIZATION", "name": "Capitalization", "default_severity": "Minor", "description": "Неправильное использование заглавных и строчных букв"},
+        {"code": "WORD_ORDER", "name": "Word order", "default_severity": "Minor", "description": "Неестественный порядок слов, калька"},
+        {"code": "UNINTELLIGIBLE", "name": "Unintelligible", "default_severity": "Critical", "description": "Невозможно понять смысл текста"}
+      ]
+    },
+    {
+      "id": "terminology",
+      "name": "Terminology (Терминология)",
+      "error_types": [
+        {"code": "WRONG_TERM", "name": "Wrong term", "default_severity": "Major", "description": "Использован неправильный термин"},
+        {"code": "INCONSISTENT_TERM", "name": "Inconsistent terminology", "default_severity": "Major", "description": "Один термин переведён по-разному"},
+        {"code": "GLOSSARY_VIOLATION", "name": "Glossary violation", "default_severity": "Major", "description": "Нарушение утверждённого глоссария"}
+      ]
+    },
+    {
+      "id": "style",
+      "name": "Style (Стиль)",
+      "error_types": [
+        {"code": "AWKWARD", "name": "Awkward", "default_severity": "Minor", "description": "Текст звучит неестественно"},
+        {"code": "REGISTER", "name": "Register / Tone", "default_severity": "Major", "description": "Несоответствие стилевому регистру (вы/ты, формальный/разговорный)"},
+        {"code": "STYLE_GUIDE", "name": "Style guide violation", "default_severity": "Minor", "description": "Нарушение style guide"},
+        {"code": "INCONSISTENT_STYLE", "name": "Inconsistent style", "default_severity": "Minor", "description": "Непоследовательный стиль внутри документа"}
+      ]
+    },
+    {
+      "id": "locale",
+      "name": "Locale Convention (Локализация)",
+      "error_types": [
+        {"code": "NUMBER_FORMAT", "name": "Number format", "default_severity": "Minor", "description": "Неправильный формат чисел"},
+        {"code": "DATE_TIME_FORMAT", "name": "Date/Time format", "default_severity": "Major", "description": "Несоответствие формату даты/времени"},
+        {"code": "CURRENCY", "name": "Currency", "default_severity": "Major", "description": "Неконвертированная или неправильно отформатированная валюта"},
+        {"code": "MEASUREMENT_UNITS", "name": "Measurement units", "default_severity": "Minor", "description": "Не конвертированы единицы измерения"},
+        {"code": "ADDRESS_PHONE", "name": "Address/Phone format", "default_severity": "Minor", "description": "Несоответствие формату адресов/телефонов"}
+      ]
+    },
+    {
+      "id": "verity",
+      "name": "Verity (Достоверность)",
+      "error_types": [
+        {"code": "CULTURE_REFERENCE", "name": "Culture-specific reference", "default_severity": "Minor", "description": "Не адаптированы культурные отсылки"},
+        {"code": "INAPPROPRIATE_CONTENT", "name": "Inappropriate content", "default_severity": "Critical", "description": "Оскорбительное или политически чувствительное содержание"},
+        {"code": "LEGAL_REGULATORY", "name": "Legal/Regulatory", "default_severity": "Critical", "description": "Несоответствие требованиям законодательства"}
+      ]
+    },
+    {
+      "id": "design",
+      "name": "Design / Markup (Разметка)",
+      "error_types": [
+        {"code": "TAGS_PLACEHOLDERS", "name": "Tags/Placeholders", "default_severity": "Major", "description": "Сломаны или удалены теги/плейсхолдеры"},
+        {"code": "TRUNCATION", "name": "Truncation", "default_severity": "Major", "description": "Перевод обрезается в UI"},
+        {"code": "WHITESPACE", "name": "Whitespace", "default_severity": "Minor", "description": "Лишние/пропущенные пробелы и переносы"},
+        {"code": "HOTKEYS", "name": "Hotkeys/Accelerators", "default_severity": "Minor", "description": "Неправильные акселераторы"},
+        {"code": "ENCODING", "name": "Encoding", "default_severity": "Critical", "description": "Проблемы с кодировкой"}
+      ]
+    }
+  ]
+}

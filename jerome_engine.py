@@ -13,7 +13,7 @@ import json
 import sys
 from pathlib import Path
 
-AGENT_SCRIPTS = Path(__file__).parent.parent / "es_benchmark" / "translation-qa-agent" / "scripts"
+AGENT_SCRIPTS = Path(__file__).parent / "scripts"
 sys.path.insert(0, str(AGENT_SCRIPTS))
 
 from file_handlers import get_handler
