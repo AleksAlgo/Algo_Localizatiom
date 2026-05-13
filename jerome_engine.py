@@ -207,14 +207,21 @@ def write_excel_report(
     by_sev = breakdown.get("by_severity", {})
 
     _hdr(ws3, 1, 1, "По категориям", bg="1F3864")
-    _hdr(ws3, 1, 2, "Штраф", bg="1F3864")
-    for i, (k, v) in enumerate(sorted(by_cat.items(), key=lambda x: -x[1]), start=2):
+    _hdr(ws3, 1, 2, "Кол-во", bg="1F3864")
+    _hdr(ws3, 1, 3, "Штраф", bg="1F3864")
+    ws3.column_dimensions["C"].width = 12
+    def _cat_score(v):
+        return v["score"] if isinstance(v, dict) else (v if isinstance(v, (int, float)) else 0)
+    def _cat_count(v):
+        return v["count"] if isinstance(v, dict) else ""
+    for i, (k, v) in enumerate(sorted(by_cat.items(), key=lambda x: -_cat_score(x[1])), start=2):
         _cell(ws3, i, 1, k)
-        _cell(ws3, i, 2, v, align="right")
+        _cell(ws3, i, 2, _cat_count(v), align="right")
+        _cell(ws3, i, 3, _cat_score(v), align="right")
 
     offset = len(by_cat) + 3
     _hdr(ws3, offset, 1, "По уровням", bg="2E75B6")
-    _hdr(ws3, offset, 2, "Штраф", bg="2E75B6")
+    _hdr(ws3, offset, 2, "Кол-во", bg="2E75B6")
     for i, (k, v) in enumerate(by_sev.items(), start=offset + 1):
         sev_cell = _cell(ws3, i, 1, k)
         _cell(ws3, i, 2, v, align="right")
