@@ -20,6 +20,7 @@ sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="repla
 import json as _json
 
 from flask import Flask, jsonify, redirect, request, send_file, session, url_for
+from werkzeug.middleware.proxy_fix import ProxyFix
 from google_auth_oauthlib.flow import Flow
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
@@ -36,6 +37,7 @@ OAUTH_SCOPES = [
 ]
 
 app = Flask(__name__, static_folder="static", template_folder="static")
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 app.secret_key = os.environ.get("SECRET_KEY") or secrets.token_hex(32)
 
 _job: dict = {"status": "idle", "files": [], "log": []}
