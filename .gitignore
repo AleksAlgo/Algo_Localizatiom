@@ -1,0 +1,11 @@
+service_account.json
+oauth_client.json
+__pycache__/
+*.pyc
+*.pyo
+.env
+jerome_tmp_*/
+*.key
+*.pem
+.DS_Store
+Thumbs.db

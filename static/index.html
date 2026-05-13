@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jerome 1.1</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f5f6fa; color: #222; min-height: 100vh; }
+  .header { background: #1a1a2e; color: #fff; padding: 18px 32px; display: flex; align-items: center; justify-content: space-between; }
+  .header h1 { font-size: 1.5rem; letter-spacing: .02em; }
+  .header span { font-size: .9rem; opacity: .6; }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .user-badge { font-size: .85rem; color: #aad; }
+  .main { max-width: 860px; margin: 32px auto; padding: 0 16px; }
+  .card { background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,.07); padding: 28px 32px; margin-bottom: 20px; }
+  label { display: block; font-size: .85rem; font-weight: 600; margin-bottom: 6px; color: #555; }
+  select, input[type=text] { width: 100%; padding: 9px 12px; border: 1.5px solid #dde; border-radius: 6px; font-size: .97rem; outline: none; transition: border .2s; }
+  select:focus, input[type=text]:focus { border-color: #6c63ff; }
+  .row { display: flex; gap: 10px; align-items: flex-end; }
+  .row input { flex: 1; }
+  .btn { padding: 9px 20px; border: none; border-radius: 6px; font-size: .95rem; font-weight: 600; cursor: pointer; transition: background .2s, opacity .2s; }
+  .btn-primary { background: #6c63ff; color: #fff; }
+  .btn-primary:hover:not(:disabled) { background: #5a52e0; }
+  .btn-primary:disabled { opacity: .45; cursor: not-allowed; }
+  .btn-secondary { background: #eee; color: #444; }
+  .btn-secondary:hover { background: #ddd; }
+  .btn-google { background: #fff; color: #444; border: 1.5px solid #dde; display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 6px; font-size: .9rem; font-weight: 600; cursor: pointer; }
+  .btn-google:hover { background: #f5f5f5; }
+  .btn-sm { padding: 6px 14px; font-size: .85rem; }
+  .mt { margin-top: 16px; }
+  .hint { margin-top: 6px; font-size: .82rem; color: #888; line-height: 1.5; }
+  .file-table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: .93rem; }
+  .file-table th { text-align: left; padding: 7px 10px; background: #f0f0f8; border-bottom: 2px solid #dde; font-weight: 600; }
+  .file-table td { padding: 7px 10px; border-bottom: 1px solid #eee; vertical-align: middle; }
+  .file-table tr:last-child td { border-bottom: none; }
+  .counter { font-size: 1.05rem; font-weight: 700; margin-top: 12px; }
+  .counter.ok { color: #2ecc71; }
+  .counter.over { color: #e74c3c; }
+  .warning { background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; padding: 10px 14px; font-size: .9rem; margin-top: 12px; }
+  .auth-banner { background: #f0f0ff; border: 1.5px solid #c0b8ff; border-radius: 8px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .auth-banner p { font-size: .93rem; color: #444; }
+  .status-badge { display: inline-block; padding: 2px 9px; border-radius: 99px; font-size: .8rem; font-weight: 600; }
+  .s-pending { background: #eee; color: #888; }
+  .s-downloading, .s-translating { background: #e8f0ff; color: #3a56d4; }
+  .s-done { background: #e6f9ef; color: #1e8a4a; }
+  .s-error { background: #fde; color: #c0392b; }
+  .score-ok { color: #2ecc71; font-weight: 700; }
+  .score-warn { color: #e67e22; font-weight: 700; }
+  .score-fail { color: #e74c3c; font-weight: 700; }
+  .log-box { background: #1a1a2e; color: #9cf; font-family: monospace; font-size: .8rem; padding: 12px 14px; border-radius: 6px; max-height: 180px; overflow-y: auto; white-space: pre-wrap; margin-top: 14px; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>Jerome 1.1</h1>
+    <span>Translation Agent — Google Drive</span>
+  </div>
+  <div class="header-right">
+    <span class="user-badge hidden" id="user-email"></span>
+    <a href="/oauth/logout" class="btn btn-secondary btn-sm hidden" id="btn-logout">Выйти</a>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- Auth banner (shown when not logged in) -->
+  <div class="auth-banner" id="auth-banner">
+    <p>Для загрузки переведённых файлов в Google Drive необходима авторизация.</p>
+    <a href="/oauth/login" class="btn-google">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-3.59-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Войти через Google
+    </a>
+  </div>
+
+  <!-- Setup card -->
+  <div class="card" id="card-setup">
+    <div style="margin-bottom:18px">
+      <label>Языковая пара</label>
+      <select id="lang-pair"></select>
+    </div>
+    <div style="margin-bottom:18px">
+      <label>Исходная папка Google Drive</label>
+      <div class="row">
+        <input type="text" id="src-url" placeholder="https://drive.google.com/drive/folders/...">
+        <button class="btn btn-secondary btn-sm" onclick="checkFolder()">Проверить</button>
+      </div>
+      <div class="hint">
+        Папка должна быть расшарена на сервисный аккаунт с правом <b>Viewer</b>:<br>
+        <span style="user-select:all;font-family:monospace;color:#555">googlesheetshelper@sunlit-unison-494214-g0.iam.gserviceaccount.com</span>
+      </div>
+    </div>
+    <div>
+      <label>Конечная папка Google Drive</label>
+      <input type="text" id="dst-url" placeholder="https://drive.google.com/drive/folders/...">
+      <div class="hint">
+        Переведённые файлы будут загружены в эту папку от вашего имени.<br>
+        <b>Как настроить:</b>
+        <ol style="margin:5px 0 0 16px;line-height:1.7">
+          <li>Создайте или выберите папку в <b>Моём диске</b> (My Drive).</li>
+          <li>Скопируйте ссылку на папку из адресной строки браузера.</li>
+          <li>Никаких дополнительных прав настраивать не нужно — загрузка выполняется под вашим аккаунтом Google после авторизации выше.</li>
+        </ol>
+        <span style="color:#c0392b">⚠ Папки из <b>Общих дисков</b> (Shared Drives) не поддерживаются — используйте только папки из раздела «Мой диск».</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- File list -->
+  <div class="card hidden" id="section-files">
+    <div id="files-loading" class="hidden" style="color:#888;font-size:.9rem">Загрузка списка файлов…</div>
+    <div id="files-content"></div>
+    <div class="mt" style="text-align:right">
+      <button class="btn btn-primary" id="btn-translate" onclick="startTranslation()" disabled>Перевести выбранные</button>
+    </div>
+  </div>
+
+  <!-- Progress card -->
+  <div class="card hidden" id="section-progress">
+    <h3 style="margin-bottom:14px">Прогресс</h3>
+    <div id="progress-files"></div>
+    <div id="log-section" class="hidden">
+      <div class="log-box" id="log-box"></div>
+    </div>
+    <div class="mt" style="display:flex;gap:10px;align-items:center">
+      <button class="btn btn-secondary btn-sm" onclick="toggleLog()">Лог</button>
+      <button class="btn btn-primary btn-sm hidden" id="btn-download" onclick="downloadReports()">Скачать отчёты QA</button>
+      <button class="btn btn-secondary btn-sm hidden" id="btn-new" onclick="resetUI()">Новая задача</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const LIMIT = 6000;
+let folderFiles = [];
+let pollInterval = null;
+let isAuthenticated = false;
+
+// ── Init ──────────────────────────────────────────────────────────────────
+
+fetch('/api/lang_pairs').then(r => r.json()).then(pairs => {
+  const sel = document.getElementById('lang-pair');
+  pairs.forEach((p, i) => sel.add(new Option(p.label, i)));
+  sel.dataset.pairs = JSON.stringify(pairs);
+});
+
+fetch('/api/auth_status').then(r => r.json()).then(data => {
+  isAuthenticated = data.authenticated;
+  if (isAuthenticated) {
+    document.getElementById('auth-banner').classList.add('hidden');
+    document.getElementById('btn-logout').classList.remove('hidden');
+  }
+});
+
+// ── Check folder ──────────────────────────────────────────────────────────
+
+async function checkFolder() {
+  const url = document.getElementById('src-url').value.trim();
+  if (!url) return alert('Введите ссылку на папку');
+
+  document.getElementById('section-files').classList.remove('hidden');
+  document.getElementById('files-loading').classList.remove('hidden');
+  document.getElementById('files-content').innerHTML = '';
+  document.getElementById('btn-translate').disabled = true;
+  folderFiles = [];
+
+  const resp = await fetch('/api/list_folder', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({url}),
+  });
+  const data = await resp.json();
+  document.getElementById('files-loading').classList.add('hidden');
+
+  if (data.error) {
+    document.getElementById('files-content').innerHTML = `<div style="color:#e74c3c">${data.error}</div>`;
+    return;
+  }
+  folderFiles = data.files;
+  renderFileTable();
+}
+
+function renderFileTable() {
+  if (!folderFiles.length) {
+    document.getElementById('files-content').innerHTML = '<div style="color:#888">Папка пуста или не содержит поддерживаемых файлов.</div>';
+    return;
+  }
+  const rows = folderFiles.map((f, i) => `
+    <tr>
+      <td><input type="checkbox" id="chk_${i}" checked onchange="updateCounter()"></td>
+      <td><label for="chk_${i}" style="cursor:pointer">${esc(f.name)}</label></td>
+      <td style="text-align:right">${f.words.toLocaleString('ru')}</td>
+    </tr>`).join('');
+
+  document.getElementById('files-content').innerHTML = `
+    <table class="file-table">
+      <thead><tr><th style="width:36px"></th><th>Файл</th><th style="text-align:right;width:100px">Слов</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="counter" id="word-counter"></div>
+    <div id="limit-warning" class="warning hidden">
+      ⚠️ Суммарный объём превышает ${LIMIT.toLocaleString('ru')} слов.<br>
+      Снимите галочки с лишних файлов или обратитесь в отдел локализации.
+    </div>`;
+  updateCounter();
+}
+
+function updateCounter() {
+  let total = 0;
+  folderFiles.forEach((f, i) => {
+    const chk = document.getElementById(`chk_${i}`);
+    if (chk?.checked) total += f.words;
+  });
+  const over = total > LIMIT;
+  const el = document.getElementById('word-counter');
+  el.className = 'counter ' + (over ? 'over' : 'ok');
+  el.textContent = `Выбрано: ${total.toLocaleString('ru')} / ${LIMIT.toLocaleString('ru')} слов`;
+  document.getElementById('limit-warning').classList.toggle('hidden', !over);
+  document.getElementById('btn-translate').disabled = over || total === 0 || !isAuthenticated;
+}
+
+// ── Start translation ─────────────────────────────────────────────────────
+
+async function startTranslation() {
+  if (!isAuthenticated) { window.location.href = '/oauth/login'; return; }
+  const dstUrl = document.getElementById('dst-url').value.trim();
+  if (!dstUrl) return alert('Введите ссылку на конечную папку');
+
+  const sel = document.getElementById('lang-pair');
+  const pairs = JSON.parse(sel.dataset.pairs);
+  const pair = pairs[parseInt(sel.value)];
+  const selectedIds = folderFiles.filter((_, i) => document.getElementById(`chk_${i}`)?.checked).map(f => f.id);
+  const selectedFiles = folderFiles.filter((_, i) => document.getElementById(`chk_${i}`)?.checked);
+
+  document.getElementById('card-setup').style.opacity = '.5';
+  document.getElementById('card-setup').style.pointerEvents = 'none';
+  document.getElementById('section-files').classList.add('hidden');
+  document.getElementById('section-progress').classList.remove('hidden');
+  document.getElementById('progress-files').innerHTML = renderProgressTable(selectedFiles);
+
+  const resp = await fetch('/api/start', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      src_url: document.getElementById('src-url').value.trim(),
+      dst_url: dstUrl,
+      lang_pair: pair,
+      selected_ids: selectedIds,
+    }),
+  });
+  const data = await resp.json();
+  if (data.error) { alert(data.error); return; }
+  pollInterval = setInterval(pollStatus, 2000);
+}
+
+function renderProgressTable(files) {
+  const rows = files.map(f => `
+    <tr>
+      <td>${esc(f.name)}</td>
+      <td style="text-align:right">${f.words.toLocaleString('ru')}</td>
+      <td><span class="status-badge s-pending" id="st_${slugId(f.name)}">ожидание</span></td>
+    </tr>`).join('');
+  return `<table class="file-table">
+    <thead><tr><th>Файл</th><th style="width:90px">Слов</th><th style="width:130px">Статус</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+  <div id="overall-score" style="margin-top:14px;font-size:1.05rem"></div>`;
+}
+
+async function pollStatus() {
+  const resp = await fetch('/api/status');
+  const data = await resp.json();
+
+  const stageMap = {
+    pending: ['s-pending', 'ожидание'],
+    downloading: ['s-downloading', 'скачивание'],
+    translating: ['s-downloading', 'перевод…'],
+    translated: ['s-downloading', 'переведено'],
+    done: ['s-done', 'Готово ✅'],
+    error: ['s-error', 'Ошибка ❌'],
+  };
+
+  data.files.forEach(f => {
+    const stEl = document.getElementById(`st_${slugId(f.name)}`);
+    if (!stEl) return;
+    const [cls, label] = stageMap[f.status] || ['s-downloading', f.status];
+    stEl.className = `status-badge ${cls}`;
+    stEl.textContent = label;
+  });
+
+  if (data.overall_score != null) {
+    const s = parseFloat(data.overall_score);
+    const cls = s <= 19 ? 'score-ok' : s <= 29 ? 'score-warn' : 'score-fail';
+    const el = document.getElementById('overall-score');
+    if (el) el.innerHTML = `Итоговая оценка MQM: <span class="${cls}">${s.toFixed(1)}</span> — ${data.overall_label || ''}`;
+  } else if (data.status === 'running') {
+    const el = document.getElementById('overall-score');
+    if (el) {
+      if (data.log?.some(l => l.includes('Ревью'))) el.textContent = 'Ревью всех файлов (Opus)…';
+      else if (data.log?.some(l => l.includes('QA'))) el.textContent = 'QA-оценка…';
+    }
+  }
+
+  const logEl = document.getElementById('log-box');
+  if (logEl) { logEl.textContent = data.log.join('\n'); logEl.scrollTop = logEl.scrollHeight; }
+
+  if (data.status === 'done' || data.status === 'error') {
+    clearInterval(pollInterval);
+    document.getElementById('btn-download').classList.remove('hidden');
+    document.getElementById('btn-new').classList.remove('hidden');
+  }
+}
+
+function toggleLog() { document.getElementById('log-section').classList.toggle('hidden'); }
+function downloadReports() { window.location.href = '/api/download_reports'; }
+
+function resetUI() {
+  document.getElementById('card-setup').style.opacity = '';
+  document.getElementById('card-setup').style.pointerEvents = '';
+  document.getElementById('section-progress').classList.add('hidden');
+  document.getElementById('section-files').classList.add('hidden');
+  document.getElementById('btn-download').classList.add('hidden');
+  document.getElementById('btn-new').classList.add('hidden');
+  document.getElementById('src-url').value = '';
+  document.getElementById('dst-url').value = '';
+  folderFiles = [];
+}
+
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function slugId(name) { return name.replace(/[^a-z0-9]/gi, '_'); }
+</script>
+</body>
+</html>
