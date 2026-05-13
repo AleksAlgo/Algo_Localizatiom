@@ -11,7 +11,7 @@ from typing import Optional
 
 from llm_clients import call_llm, parse_json_response
 
-REFERENCE_DIR = Path(__file__).resolve().parent.parent / "reference"
+REFERENCE_DIR = Path(__file__).resolve().parent / "reference"
 
 
 def _load_criteria() -> dict:
